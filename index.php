@@ -1,33 +1,31 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
-
-$connection = new \MongoDB\Client( "mongodb://php-task.loc" );
-$collection = $connection->movies->movie;
+require __DIR__ . '/classes/MovieController.php';
 
 
 // get the HTTP method, path and body of the request
 $method = $_SERVER['REQUEST_METHOD'];
-$request_uri = explode('?', $_SERVER['REQUEST_URI'], 2);
-$request =[$request_uri[0], $method];
+$request_url = explode('?', $_SERVER['REQUEST_URI'], 2);
+$request_uri = explode('/', $request_url[0]);
 
+$id = count($request_uri) > 2 ? $request_uri[2] : '';
+$request = [$request_uri[1], $id, $method];
+$movie = new MovieController();
 switch ($request) {
-    case ['/movies','GET']:
-        $cursor = $collection->find();
-        echo nl2br("All movies => \n");
-        var_dump(gettype($cursor));
-        foreach ($cursor as $document) {
-            echo nl2br($document->Name.' '.$document->Description.' '.$document->IsAdult."\n");
-        }
+    case ['movies', '', 'GET']:
+        $movie->index();
         break;
-    // About page
-    case '/about':
-        var_dump('about');
+    case ['movies', '', 'POST']:
+        $movie->store();
+        break;
+    case ['movies', true, 'GET']:
+        var_dump($id);
         break;
     // Everything else
     default:
         var_dump('default');
-/*        header('HTTP/1.0 404 Not Found');
-        require '../views/404.php';*/
+        /*        header('HTTP/1.0 404 Not Found');
+                require '../views/404.php';*/
         break;
 }
 
